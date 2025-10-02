@@ -33,7 +33,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900 text-white min-h-screen`}
       >
         <Navbar />
-        <main className="pt-16">
+        <main>
           {children}
         </main>
         <MoveiBot />

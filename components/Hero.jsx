@@ -28,9 +28,8 @@ const Hero = () => {
 
   if (isLoading || !featuredMovie) {
     return (
-      <div className="h-[60vh] md:h-[90vh] bg-gray-900 animate-pulse flex items-center justify-center">
-         <div className="text-white">Loading Hero...</div>
-      </div>
+      <div className="h-[60vh] md:h-[90vh] bg-transparent animate-pulse flex items-center justify-center">
+       </div>
     );
   }
 
