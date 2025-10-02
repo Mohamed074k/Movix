@@ -58,8 +58,7 @@ export default function TvShowDetail() {
       </div>
     );
   }
-
-  if (error || !show) {
+   if (error || !show) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center text-center px-4">
         <div className="text-center">
