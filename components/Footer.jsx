@@ -18,9 +18,10 @@ const Footer = () => {
           {/* Made by */}
           <p className="text-gray-400 text-sm">
             Made with <span className="text-red-500">♥</span> by{' '}
-<a href="https://protfolio-v2-aa25.vercel.app/">          
-      <span className="text-purple-400 font-semibold ">Mohamed Elsayed</span>
-</a>          </p>
+          <a href="https://protfolio-v2-aa25.vercel.app/">          
+            <span className="text-purple-400 font-semibold ">Mohamed Elsayed</span>
+          </a>        
+          </p>
 
           {/* TMDB Attribution */}
           <p className="text-gray-500 text-xs mt-2">

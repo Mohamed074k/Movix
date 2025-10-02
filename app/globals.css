@@ -1,3 +1,4 @@
+
 @import "tailwindcss";
 
 :root {
@@ -325,6 +326,93 @@ html {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Search bar animations */
+.search-input {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-input:focus {
+  transform: scale(1.02);
+}
+
+/* Mobile menu slide animation */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.mobile-menu-enter {
+  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.mobile-menu-exit {
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Hero button animations */
+@keyframes buttonFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.hero-btn-primary {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.hero-btn-primary:hover::before {
+  left: 100%;
+}
+
+.hero-btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -5px rgba(255, 255, 255, 0.3);
+}
+
+.hero-btn-secondary {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.hero-btn-secondary:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.5);
+  border-color: rgba(139, 92, 246, 0.8);
+}
+
 /* Optimized animations for better performance */
 @media (prefers-reduced-motion: reduce) {
   .animate-slide-in-up,
@@ -334,16 +422,22 @@ html {
   .user-message-slide-in,
   .typing-dot,
   .clear-button-pulse,
-  .online-indicator {
+  .online-indicator,
+  .mobile-menu-enter,
+  .mobile-menu-exit,
+  .search-input:focus {
     animation: none;
   }
   
-  .chat-button-hover:hover {
+  .chat-button-hover:hover,
+  .hero-btn-primary:hover,
+  .hero-btn-secondary:hover {
     transform: none;
   }
   
   .messages-container,
-  .chat-window {
+  .chat-window,
+  .search-input {
     transition: none;
   }
 }

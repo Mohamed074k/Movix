@@ -1,51 +1,93 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { getTrendingMovies } from '@/lib/tmdb';
-import { PlayCircle } from 'lucide-react';
+import { PlayCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Hero = () => {
-  const [featuredMovie, setFeaturedMovie] = useState(null);
+  const [movies, setMovies] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch trending movies
   useEffect(() => {
-    const fetchFeatured = async () => {
+    const fetchMovies = async () => {
       try {
         const data = await getTrendingMovies();
         if (data.results && data.results.length > 0) {
-          setFeaturedMovie(data.results[0]);
+          setMovies(data.results.slice(0, 5)); // Limit to 5 for performance
         }
       } catch (error) {
-        console.error('Error fetching featured movie:', error);
+        console.error('Error fetching trending movies:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchFeatured();
+    fetchMovies();
   }, []);
 
-  if (isLoading || !featuredMovie) {
+  // Auto-advance every 8 seconds (only if more than 1 movie)
+  useEffect(() => {
+    if (movies.length <= 1) return;
+
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, [currentIndex, movies.length]);
+
+  const nextSlide = useCallback(() => {
+    if (isAnimating || movies.length <= 1) return;
+    setIsAnimating(true);
+    setCurrentIndex((prev) => (prev + 1) % movies.length);
+    setTimeout(() => setIsAnimating(false), 500);
+  }, [isAnimating, movies.length]);
+
+  const prevSlide = useCallback(() => {
+    if (isAnimating || movies.length <= 1) return;
+    setIsAnimating(true);
+    setCurrentIndex((prev) => (prev - 1 + movies.length) % movies.length);
+    setTimeout(() => setIsAnimating(false), 500);
+  }, [isAnimating, movies.length]);
+
+  const goToSlide = (index) => {
+    if (isAnimating || index === currentIndex) return;
+    setIsAnimating(true);
+    setCurrentIndex(index);
+    setTimeout(() => setIsAnimating(false), 500);
+  };
+
+  if (isLoading || movies.length === 0) {
     return (
       <div className="h-[60vh] md:h-[90vh] bg-transparent animate-pulse flex items-center justify-center">
-       </div>
+      </div>
     );
   }
 
-  const { id, title, overview, backdrop_path, release_date, vote_average } = featuredMovie;
+  const currentItem = movies[currentIndex];
+  const { id, title, overview, backdrop_path, release_date, vote_average } = currentItem;
+
+  // Fixed: no extra space in image URL
   const backgroundImageUrl = `https://image.tmdb.org/t/p/original${backdrop_path}`;
 
   return (
-    <div
-      className="h-[60vh] md:h-[90vh] bg-cover bg-center bg-no-repeat relative"
-      style={{ backgroundImage: `url(${backgroundImageUrl})` }}
-    >
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
-      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent"></div>
+    <div className="relative h-[60vh] md:h-[90vh] overflow-hidden">
+      {/* Background */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700 ease-in-out"
+        style={{ backgroundImage: `url(${backgroundImageUrl})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent"></div>
+      </div>
 
+      {/* Content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-end pb-12 md:pb-24">
-        <div className="max-w-xl text-white">
+        <div className="max-w-xl text-white animate-[fadeIn_0.5s_ease-in-out]">
           <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
             {title}
           </h1>
@@ -59,18 +101,54 @@ const Hero = () => {
           </p>
           <div className="flex space-x-4">
             <Link 
-                href={`/movie/${id}`}
-                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-black bg-white hover:bg-gray-200 transition-colors"
+              href={`/movie/${id}`}
+              className="hero-btn-primary inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-black bg-white hover:bg-gray-200"
             >
-                Read More
+              Read More
             </Link>
-            <button className="inline-flex items-center justify-center px-6 py-3 border border-purple-500 text-base font-medium rounded-md text-white bg-purple-600/30 hover:bg-purple-700/50 backdrop-blur-sm transition-colors">
+            <button className="hero-btn-secondary inline-flex items-center justify-center px-6 py-3 border border-purple-500 text-base font-medium rounded-md text-white bg-purple-600/30 hover:bg-purple-700/50 backdrop-blur-sm">
               <PlayCircle className="mr-2 h-6 w-6" />
               Watch Trailer
             </button>
           </div>
         </div>
       </div>
+
+      {/* Navigation Arrows */}
+      {movies.length > 1 && (
+        <>
+          <button
+            onClick={prevSlide}
+            className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white transition-opacity"
+            aria-label="Previous movie"
+          >
+            <ChevronLeft className="h-8 w-8" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white transition-opacity"
+            aria-label="Next movie"
+          >
+            <ChevronRight className="h-8 w-8" />
+          </button>
+        </>
+      )}
+
+      {/* Slide Indicators */}
+      {movies.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          {movies.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`h-1.5 rounded-full transition-all ${
+                index === currentIndex ? 'w-8 bg-purple-500' : 'w-3 bg-gray-300'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
