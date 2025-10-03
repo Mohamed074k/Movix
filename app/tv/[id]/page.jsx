@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { 
   Star, 
   Calendar, 
@@ -21,12 +21,14 @@ import CarouselSlider from '@/components/CarouselSlider';
 
 export default function TvShowDetail() {
   const params = useParams();
+  const router = useRouter();
   const tvId = params.id;
   
   const [show, setShow] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     const fetchShowDetails = async () => {
@@ -51,6 +53,15 @@ export default function TvShowDetail() {
     }
   }, [tvId]);
 
+  const handleTabChange = (tab) => {
+    if (tab === activeTab) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setActiveTab(tab);
+      setIsTransitioning(false);
+    }, 200);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -66,7 +77,7 @@ export default function TvShowDetail() {
           <p className="text-gray-400 mb-6">{error || 'The TV show you are looking for does not exist.'}</p>
           <Link
             href="/"
-            className="inline-flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+            className="inline-flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
             <span>Back to Home</span>
@@ -103,6 +114,33 @@ export default function TvShowDetail() {
 
   return (
     <div className="min-h-screen bg-black">
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeOut {
+          from {
+            opacity: 1;
+          }
+          to {
+            opacity: 0;
+          }
+        }
+        .tab-content-enter {
+          animation: fadeInUp 0.4s ease-out forwards;
+        }
+        .tab-content-exit {
+          animation: fadeOut 0.2s ease-out forwards;
+        }
+      `}</style>
+
       {/* Backdrop */}
       <div className="relative h-[60vh] min-h-[400px] overflow-hidden">
         <img
@@ -116,13 +154,13 @@ export default function TvShowDetail() {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
         
         <div className="absolute top-20 left-4 z-10">
-          <Link
-            href="/"
-            className="inline-flex items-center space-x-2 bg-black/50 hover:bg-black/70 text-white px-4 py-2 rounded-lg backdrop-blur-sm transition-colors"
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center space-x-2 bg-black/50 hover:bg-black/70 text-white px-4 py-2 rounded-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:px-5 active:scale-95"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 transition-transform duration-300 group-hover:-translate-x-1" />
             <span>Back</span>
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -204,18 +242,18 @@ export default function TvShowDetail() {
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-4">
                 {trailer && (
-                  <a href={`https://www.youtube.com/watch?v=${trailer.key}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                  <a href={`https://www.youtube.com/watch?v=${trailer.key}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
                     <Play className="h-5 w-5" />
                     <span>Watch Trailer</span>
                   </a>
                 )}
                 
-                <button className="inline-flex items-center space-x-2 bg-gray-800/50 hover:bg-gray-700/50 text-white px-6 py-3 rounded-lg font-semibold transition-colors backdrop-blur-sm">
+                <button className="inline-flex items-center space-x-2 bg-gray-800/50 hover:bg-gray-700/50 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 backdrop-blur-sm hover:scale-105 active:scale-95">
                   <Heart className="h-5 w-5" />
                   <span>Add to Watchlist</span>
                 </button>
 
-                <button className="inline-flex items-center space-x-2 bg-gray-800/50 hover:bg-gray-700/50 text-white px-6 py-3 rounded-lg font-semibold transition-colors backdrop-blur-sm">
+                <button className="inline-flex items-center space-x-2 bg-gray-800/50 hover:bg-gray-700/50 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 backdrop-blur-sm hover:scale-105 active:scale-95">
                   <Share2 className="h-5 w-5" />
                   <span>Share</span>
                 </button>
@@ -227,8 +265,8 @@ export default function TvShowDetail() {
                   {['overview', 'cast', 'details'].map((tab) => (
                     <button
                       key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`py-2 px-1 border-b-2 font-medium text-sm capitalize transition-colors ${
+                      onClick={() => handleTabChange(tab)}
+                      className={`py-2 px-1 border-b-2 font-medium text-sm capitalize transition-all duration-300 ${
                         activeTab === tab
                           ? 'border-purple-500 text-purple-400'
                           : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
@@ -241,91 +279,93 @@ export default function TvShowDetail() {
               </div>
 
               {/* Tab Content */}
-              <div className="py-6">
-                {activeTab === 'overview' && (
-                  <div className="space-y-6">
-                    <p className="text-gray-300 text-lg leading-relaxed">
-                      {overview || 'No overview available.'}
-                    </p>
-                  </div>
-                )}
-
-                {activeTab === 'cast' && (
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-semibold text-white mb-4">Cast</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                      {credits?.cast?.slice(0, 10).map((person) => (
-                        <div key={person.id} className="text-center">
-                          <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gray-700 flex items-center justify-center">
-                            {person.profile_path ? (
-                              <img
-                                src={getImageUrl(person.profile_path, 'w185')}
-                                alt={person.name}
-                                className="w-full h-full rounded-full object-cover"
-                              />
-                            ) : (
-                              <Users className="h-8 w-8 text-gray-400" />
-                            )}
-                          </div>
-                          <p className="text-sm font-medium text-white">{person.name}</p>
-                          <p className="text-xs text-gray-400">{person.character}</p>
-                        </div>
-                      ))}
+              <div className="py-6 min-h-[300px]">
+                <div className={isTransitioning ? 'tab-content-exit' : 'tab-content-enter'}>
+                  {activeTab === 'overview' && !isTransitioning && (
+                    <div className="space-y-6">
+                      <p className="text-gray-300 text-lg leading-relaxed">
+                        {overview || 'No overview available.'}
+                      </p>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {activeTab === 'details' && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="text-lg font-semibold text-white mb-3">Show Information</h3>
-                        <div className="space-y-2 text-gray-300">
-                          <div className="flex justify-between">
-                            <span>Status:</span>
-                            <span>{status}</span>
+                  {activeTab === 'cast' && !isTransitioning && (
+                    <div className="space-y-6">
+                      <h3 className="text-xl font-semibold text-white mb-4">Cast</h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {credits?.cast?.slice(0, 10).map((person) => (
+                          <div key={person.id} className="text-center">
+                            <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gray-700 flex items-center justify-center">
+                              {person.profile_path ? (
+                                <img
+                                  src={getImageUrl(person.profile_path, 'w185')}
+                                  alt={person.name}
+                                  className="w-full h-full rounded-full object-cover"
+                                />
+                              ) : (
+                                <Users className="h-8 w-8 text-gray-400" />
+                              )}
+                            </div>
+                            <p className="text-sm font-medium text-white">{person.name}</p>
+                            <p className="text-xs text-gray-400">{person.character}</p>
                           </div>
-                          <div className="flex justify-between">
-                            <span>First Air Date:</span>
-                            <span>{first_air_date}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Seasons:</span>
-                            <span>{number_of_seasons}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Episodes:</span>
-                            <span>{number_of_episodes}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Runtime:</span>
-                            <span>{displayRuntime} min/episode</span>
-                          </div>
-                        </div>
+                        ))}
                       </div>
-                      
-                      {production_companies && production_companies.length > 0 && (
+                    </div>
+                  )}
+
+                  {activeTab === 'details' && !isTransitioning && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <h3 className="text-lg font-semibold text-white mb-3">Production Companies</h3>
-                          <div className="space-y-2">
-                            {production_companies.map((company) => (
-                              <div key={company.id} className="flex items-center space-x-2">
-                                {company.logo_path && (
-                                  <img
-                                    src={getImageUrl(company.logo_path, 'w92')}
-                                    alt={company.name}
-                                    className="h-6 object-contain"
-                                  />
-                                )}
-                                <span className="text-gray-300">{company.name}</span>
-                              </div>
-                            ))}
+                          <h3 className="text-lg font-semibold text-white mb-3">Show Information</h3>
+                          <div className="space-y-2 text-gray-300">
+                            <div className="flex justify-between">
+                              <span>Status:</span>
+                              <span>{status}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>First Air Date:</span>
+                              <span>{first_air_date}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Seasons:</span>
+                              <span>{number_of_seasons}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Episodes:</span>
+                              <span>{number_of_episodes}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Runtime:</span>
+                              <span>{displayRuntime} min/episode</span>
+                            </div>
                           </div>
                         </div>
-                      )}
+                        
+                        {production_companies && production_companies.length > 0 && (
+                          <div>
+                            <h3 className="text-lg font-semibold text-white mb-3">Production Companies</h3>
+                            <div className="space-y-2">
+                              {production_companies.map((company) => (
+                                <div key={company.id} className="flex items-center space-x-2">
+                                  {company.logo_path && (
+                                    <img
+                                      src={getImageUrl(company.logo_path, 'w92')}
+                                      alt={company.name}
+                                      className="h-6 object-contain"
+                                    />
+                                  )}
+                                  <span className="text-gray-300">{company.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -339,4 +379,4 @@ export default function TvShowDetail() {
       </div>
     </div>
   );
-} 
+}
